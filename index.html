@@ -1,0 +1,618 @@
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Socket.io testing</title>
+        <meta name="viewpoint" content="width=devive-width, inditial-scale=1.0" />
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <h1 class="to-delete">Enter Your Name:</h1>
+        <input id="input" class="to-delete"></input>
+        <button id="button" class="to-delete">search player</button>
+        <script src="/socket.io/socket.io.js"></script>
+        
+        <script type="module">
+        const socket=io();
+        var kanlist;
+        var card;
+        var ready_riichi = false;
+        var ready_open = false;
+        var k;
+        var urturn = false;
+        function actioned() {
+            urturn = false;
+            //turn off all button
+            let but = document.getElementById("button-area");
+            removeAllChildNodes(but);
+        }
+        function replyplay(event) {
+            if (urturn) {
+            const clickedElement = event.target;
+            const classList = clickedElement.classList;
+            if (ready_open) {
+                socket.emit('action', {play:2000+parseInt(classList[1]),room});
+            } else if (ready_riichi) {
+                socket.emit('action', {play:1000+parseInt(classList[1]),room});
+            } else {
+                socket.emit('action', {play:parseInt(classList[1]),room});
+            }
+            actioned();
+            }
+        }
+        function removeAllChildNodes(parent) {
+            while (parent.firstChild) {
+                parent.removeChild(parent.firstChild);
+            }
+        }
+        function addstacktile(card){
+            let doubletile = document.createElement("div");
+            let tile1 = document.createElement("div");
+            tile1.classList.add("exptile1", card);
+            tile1.style.backgroundImage = "url('Regular/"+card+".png')";
+            doubletile.classList.add("doubletile");
+            doubletile.appendChild(tile1);
+            let tile2 = document.createElement("div");
+            tile2.classList.add("exptile2", card);
+            tile2.style.backgroundImage = "url('Regular/"+card+".png')";
+            doubletile.classList.add("doubletile");
+            doubletile.appendChild(tile2);
+            let playerHand = document.getElementById("player-exposed");
+            playerHand.appendChild(doubletile);
+        }
+        //update hand on screen
+        function updateplayerhand(hand,exposed =[]) {
+            //update player hand
+            let playerHand = document.getElementById("player-hand");
+            card = [];
+            var tile = 0;
+            removeAllChildNodes(playerHand);
+            for (k = 0; k < hand.length; k++) {
+                card.push(hand[k]);
+                if (card[k] == 1000){
+                    continue;
+                }
+                tile = document.createElement("div");
+                tile.classList.add("tile", card[k] ,"hand");
+                if (!k) {
+                    tile.style.marginLeft = '40px';
+                }
+                tile.addEventListener("click", replyplay);
+                tile.style.backgroundImage = "url('Regular/"+card[k]+".png')";
+                playerHand.appendChild(tile);
+                
+            }
+            //update player exposed
+            playerHand = document.getElementById("player-exposed");
+            removeAllChildNodes(playerHand);
+            if (exposed.length>0) {
+                for (let i=exposed.length-1; i>=0; i--) {
+                    //check type
+                    switch (exposed[i][1][1]) {
+                        case 0: //暗槓
+                            for (let j=0; j < 4; j++) {
+                                card = exposed[i][0][j];
+                                tile = document.createElement("div");
+                                tile.classList.add("exptile", card);
+                                tile.style.backgroundImage = "url('Regular/"+card+".png')";
+                                if (j==0 || j==3) {
+                                    tile.style.backgroundImage ="url('Regular/Back.png')";
+                                }
+                                playerHand.appendChild(tile);
+                            }
+                            break;
+                        case 1: //明槓
+                            for (let j=0; j < 4; j++) {
+                                card = exposed[i][0][j];
+                                tile = document.createElement("div");
+                                tile.classList.add("exptile", card);
+                                tile.style.backgroundImage = "url('Regular/"+card+".png')";
+                                switch (exposed[i][1][0]) {
+                                    case 1: //下家
+                                        if (j==3) {
+                                            tile.style.transform = 'rotate(90deg)';
+                                            tile.style.marginLeft = '4px';
+                                            tile.style.marginRight = '11px';
+                                            tile.style.top = '18px'
+                                        }
+                                        break;
+                                    case 2: //對家
+                                        if (j==1) {
+                                            tile.style.transform = 'rotate(90deg)';
+                                            tile.style.marginLeft = '4px';
+                                            tile.style.marginRight = '11px';
+                                            tile.style.top = '18px'
+                                        }
+                                        break;
+                                    case 3: //上家
+                                        if (j==0) {
+                                            tile.style.transform = 'rotate(90deg)';
+                                            tile.style.marginLeft = '4px';
+                                            tile.style.marginRight = '11px';
+                                            tile.style.top = '18px'
+                                        }
+                                        break;
+                                }
+                                playerHand.appendChild(tile);
+                            }
+                            break;
+                        case 2: //加槓
+                            switch (exposed[i][1][0]) {
+                                case 1: //下家
+                                    addstacktile(exposed[i][0][0]);
+                                    card = exposed[i][0][0];
+                                    tile = document.createElement("div");
+                                    tile.classList.add("exptile", card);
+                                    tile.style.backgroundImage = "url('Regular/"+card+".png')";
+                                    playerHand.appendChild(tile);
+                                    tile = document.createElement("div");
+                                    tile.classList.add("exptile", card);
+                                    tile.style.backgroundImage = "url('Regular/"+card+".png')";
+                                    playerHand.appendChild(tile);
+                                    break;
+                                case 2: //對家
+                                    card = exposed[i][0][0];
+                                    tile = document.createElement("div");
+                                    tile.classList.add("exptile", card);
+                                    tile.style.backgroundImage = "url('Regular/"+card+".png')";
+                                    playerHand.appendChild(tile);
+                                    addstacktile(exposed[i][0][0]);
+                                    tile = document.createElement("div");
+                                    tile.classList.add("exptile", card);
+                                    tile.style.backgroundImage = "url('Regular/"+card+".png')";
+                                    playerHand.appendChild(tile);
+                                    break;
+                                case 3: //上家
+                                    card = exposed[i][0][0];
+                                    tile = document.createElement("div");
+                                    tile.classList.add("exptile", card);
+                                    tile.style.backgroundImage = "url('Regular/"+card+".png')";
+                                    playerHand.appendChild(tile);
+                                    tile = document.createElement("div");
+                                    tile.classList.add("exptile", card);
+                                    tile.style.backgroundImage = "url('Regular/"+card+".png')";
+                                    playerHand.appendChild(tile);
+                                    addstacktile(exposed[i][0][0]);
+                                    break;
+                            }
+                            break; //break case2                  
+                        case 3: //吃
+                            card = exposed[i][0][2];
+                            tile = document.createElement("div");
+                            tile.classList.add("exptile", card);
+                            tile.style.backgroundImage = "url('Regular/"+card+".png')";
+                            tile.style.transform = 'rotate(90deg)';
+                            tile.style.marginLeft = '4px';
+                            tile.style.marginRight = '11px';
+                            tile.style.top = '18px'
+                            playerHand.appendChild(tile);
+                            card = exposed[i][0][1];
+                            tile = document.createElement("div");
+                            tile.classList.add("exptile", card);
+                            tile.style.backgroundImage = "url('Regular/"+card+".png')";
+                            playerHand.appendChild(tile);
+                            card = exposed[i][0][0];
+                            tile = document.createElement("div");
+                            tile.classList.add("exptile", card);
+                            tile.style.backgroundImage = "url('Regular/"+card+".png')";
+                            playerHand.appendChild(tile);
+                            break; //break case3
+                        case 4: //碰
+                            for (let j=0; j < 3; j++) {
+                                card = exposed[i][0][j];
+                                tile = document.createElement("div");
+                                tile.classList.add("exptile", card);
+                                tile.style.backgroundImage = "url('Regular/"+card+".png')";
+                                switch (exposed[i][1][0]) {
+                                    case 1: //下家
+                                        if (j==2) {
+                                            tile.style.transform = 'rotate(90deg)';
+                                            tile.style.marginLeft = '4px';
+                                            tile.style.marginRight = '11px';
+                                            tile.style.top = '18px'
+                                        }
+                                        break;
+                                    case 2: //對家
+                                        if (j==1) {
+                                            tile.style.transform = 'rotate(90deg)';
+                                            tile.style.marginLeft = '4px';
+                                            tile.style.marginRight = '11px';
+                                            tile.style.top = '18px'
+                                        }
+                                        break;
+                                    case 3: //上家
+                                        if (j==0) {
+                                            tile.style.transform = 'rotate(90deg)';
+                                            tile.style.marginLeft = '4px';
+                                            tile.style.marginRight = '11px';
+                                            tile.style.top = '18px'
+                                        }
+                                        break;
+                                }
+                                playerHand.appendChild(tile);
+                            }
+                        break; //break case4
+                    }
+                }
+            }
+        }
+        //turn on button num
+        function enablebutton(num) {
+        //create a button
+        var button = document.createElement("button");
+        //get the button area
+        const buttonarea = document.getElementById("button-area");
+        switch (num) {
+            case 0: //吃
+                //set the text
+                button.innerHTML = "吃";
+                //add an event listener
+                button.addEventListener("click", function(){
+                    alert("Chi!!!");
+                });
+                //give class and id to it
+                button.classList.add("action-button");
+                button.id = 'button-0';
+                //child the button to the area
+                buttonarea.appendChild(button);
+                break;
+            case 1: //碰
+                //set the text
+                button.innerHTML = "碰";
+                //add an event listener
+                button.addEventListener("click", function(){
+                    alert("Pong!!!");
+                });
+                //give class and id to it
+                button.classList.add("action-button");
+                button.id = 'button-1';
+                //child the button to the area
+                buttonarea.appendChild(button);
+                break;
+            case 2: //明槓
+                //set the text
+                button.innerHTML = "槓";
+                //add an event listener
+                button.addEventListener("click", function(){
+                    alert("Kan!!!");
+                });
+                //give class and id to it
+                button.classList.add("action-button");
+                button.id = 'button-2';
+                //child the button to the area
+                buttonarea.appendChild(button);
+                break;
+            case 3: //暗槓or加槓
+                //set the text
+                button.innerHTML = "槓";
+                //add an event listener
+                button.addEventListener("click", function(){
+                    //get the tile to kan
+                    //check if more then one option
+                    if (kanlist.flat().length == 1) {
+                        //kan directly if no choice
+                        actioned();
+                        socket.emit('kan', {kantile:kanlist.flat()[0],room});
+                    } else {
+                        //TODO:create choice
+                        //create a window
+                        const newwindow = document.createElement("div");
+                        let board = document.getElementById("game-board");
+                        newwindow.id = ("choice");
+                        board.appendChild(newwindow);
+                        let closebutton = document.createElement("button");
+                        closebutton.textContent = "X";
+                        closebutton.id = ("closebutton");
+                        closebutton.addEventListener("click", () => {
+                            newwindow.remove();
+                        })
+                        newwindow.appendChild(closebutton);
+                        let kantext = document.createElement("p");
+                        kantext.textContent = "選擇要開槓的牌";
+                        kantext.id = "kantext";
+                        newwindow.appendChild(kantext);
+                        //addtile to it
+                        kanlist.flat().forEach(element => {
+                            k = document.createElement("div");
+                            k.classList.add("tile");
+                            k.style.backgroundImage = "url('Regular/"+element+".png')";
+                            k.addEventListener("click", () => {
+                                if (kanlist[0].includes(element)){
+                                    socket.emit('kan', {kantile:parseInt(element),room});
+                                } else {
+                                    socket.emit('kan', {kantile:parseInt(element)+200,room});
+                                }
+                                
+                                newwindow.remove();
+                                actioned();
+                            })
+                            newwindow.appendChild(k);
+                        });
+                    }
+                });
+                //give class and id to it
+                button.classList.add("action-button");
+                button.id = 'button-3';
+                //child the button to the area
+                buttonarea.appendChild(button);
+                break;
+            case 4: //立直
+                //set the text
+                button.innerHTML = "立直";
+                //add an event listener
+                button.addEventListener("click", function(){
+                    if (!ready_open && !ready_riichi) {//ready for open riichi
+                    ready_riichi = true;
+                    //dark the card that don't lead to tenpai
+                    let hand_tile = document.getElementsByClassName("hand");
+                    for (let i=0; i<hand_tile.length; i++) {
+                        //check furiten
+                        if (typeof player[playpos][1].tenpai[hand_tile[i].classList[1]] === "undefined") {
+                            //darken the tile
+                            hand_tile[i].style.filter = "brightness(50%)";
+                            hand_tile[i].removeEventListener("click", replyplay);
+                        } else {
+                            let can_riichi = true;
+                            for (let j=0; j<player[playpos][1]['furiten'].length; j++){
+                            if (player[playpos][1]['tenpai'][hand_tile[i].classList[1]].includes(player[playpos][1]['furiten'][j])) {
+                                can_riichi = false;
+                            }
+                            if (!can_riichi) {
+                                //darken the tile
+                                hand_tile[i].style.filter = "brightness(50%)";
+                                hand_tile[i].removeEventListener("click", replyplay);
+                            }
+                        }
+                        }
+                    }}
+                    //cancel riichi on second press
+                    else if (ready_riichi) {
+                        ready_riichi = false;
+                        //reflash the hand
+                        updateplayerhand(player[playpos][1]['hand'],player[playpos][1]['exposed']);
+                    }
+                });
+                //give class and id to it
+                button.classList.add("action-button");
+                button.id = 'button-4';
+                //child the button to the area
+                buttonarea.appendChild(button);
+                break;
+            case 5: //開立直
+                //set the text
+                button.innerHTML = "開立直";
+                //add an event listener
+                button.addEventListener("click", function(){
+                    if (!ready_riichi && !ready_open) {//ready for open riichi
+                    ready_open = true;
+                    //dark the card that don't lead to tenpai
+                    let hand_tile = document.getElementsByClassName("hand");
+                    for (let i=0; i<hand_tile.length; i++) {
+                        console.log(player[playpos][1].tenpai);
+                        console.log(player[playpos][1]);
+                        console.log(hand_tile[i].classList[2]);
+                        if (typeof player[playpos][1].tenpai[hand_tile[i].classList[1]] === "undefined") {
+                            //darken the tile
+                            hand_tile[i].style.filter = "brightness(50%)";
+                            hand_tile[i].removeEventListener("click", replyplay);
+                        }
+                    }}
+                    //cancel oprn riichi on second press
+                    else if (ready_open) {
+                        ready_open = false;
+                        //reflash the hand
+                        updateplayerhand(player[playpos][1]['hand'],player[playpos][1]['exposed']);
+                    }
+                });
+                //give class and id to it
+                button.classList.add("action-button");
+                button.id = 'button-5';
+                //child the button to the area
+                buttonarea.appendChild(button);
+                break;
+            case 6: //榮和
+                //set the text
+                button.innerHTML = "榮和";
+                //add an event listener
+                button.addEventListener("click", function(){
+                    alert("Ron!!!");
+                });
+                //give class and id to it
+                button.classList.add("action-button");
+                button.id = 'button-6';
+                //child the button to the area
+                buttonarea.appendChild(button);
+                break;
+                break;
+            case 7: //自摸
+                //set the text
+                button.innerHTML = "自摸";
+                //add an event listener
+                button.addEventListener("click", function(){
+                    socket.emit('zumo', {player:playpos,room});
+                    actioned();
+                });
+                //give class and id to it
+                button.classList.add("action-button");
+                button.id = 'button-7';
+                //child the button to the area
+                buttonarea.appendChild(button);
+                break;
+            case 8: //跳過
+                //set the text
+                button.innerHTML = "跳過";
+                //add an event listener
+                button.addEventListener("click", function(){
+                    alert("skip!!!");
+                });
+                //give class and id to it
+                button.classList.add("action-button");
+                button.id = 'button-9';
+                //child the button to the area
+                buttonarea.appendChild(button);
+                break;
+                break;    
+            default: console.error("Invalid number of button")
+        }
+        }
+            var room = 'default';
+            let input1 = document.getElementById("input");
+            var gamedata;
+            var urname;
+            var playpos;
+            var player = [];
+            document.getElementById('button').addEventListener("click", () => {
+                if (input1.value == '') {
+                    alert("enter your name!!!");
+                } else {
+                    urname = input1.value;
+                    console.log(urname);
+                    console.log(urname == '');
+                    socket.emit('find', urname);
+                }
+            })
+            socket.on("ilegal name", iname => {
+                alert(`Player named "${iname}" is online already or you are already online!!!`);
+            })
+            //check if you are assigned into a room
+            socket.on("found", e => {
+                console.log("found received")
+                if (e.namelist.includes(urname)) {
+                    console.log("join required")
+                    socket.emit("join room", {room:e.ranint,name:urname});
+                    room = e.ranint;
+                }
+            })
+            //receive gamedata from server and update the screen
+            socket.on("joined room", e=> {
+                //loadgamedata
+                gamedata = e.stat[3];
+                //set position
+                playpos = e.position;
+                //load player info;
+                player[0] = e.stat[0];
+                player[1] = e.stat[1];
+                player[2] = e.stat[2];
+                //update screen
+                const elements = document.getElementsByClassName('to-delete');
+                while (elements.length > 0) {
+                elements[0].parentNode.removeChild(elements[0]);
+                }
+                //update the frame
+                document.body.style.backgroundColor = "lightgray";
+                const gameboard = document.createElement("div");
+                gameboard.id = "game-board";
+                gameboard.classList.add("game-board");
+                document.body.appendChild(gameboard);
+                const oppdiscard = document.createElement("div");
+                oppdiscard.classList.add("oppdiscard");
+                gameboard.appendChild(oppdiscard);
+                const leftdiscard = document.createElement("div");
+                leftdiscard.classList.add("leftdiscard");
+                gameboard.appendChild(leftdiscard);
+                const rightdiscard = document.createElement("div");
+                rightdiscard.classList.add("rightdiscard");
+                gameboard.appendChild(rightdiscard);
+                const owndiscard = document.createElement("div");
+                owndiscard.classList.add("owndiscard");
+                owndiscard.id = "owndiscard";
+                gameboard.appendChild(owndiscard);
+                const playerhand = document.createElement("div");
+                playerhand.classList.add("player-hand");
+                playerhand.id = "player-hand"
+                gameboard.appendChild(playerhand);
+                const playerexposed = document.createElement("div");
+                playerexposed.classList.add("player-exposed");
+                playerexposed.id = "player-exposed"
+                gameboard.appendChild(playerexposed);
+                const centreboard = document.createElement("div");
+                centreboard.classList.add("centreboard");
+                gameboard.appendChild(centreboard);
+                const buttonarea = document.createElement("div");
+                buttonarea.classList.add("button-area");
+                buttonarea.id = "button-area"
+                gameboard.appendChild(buttonarea);
+                //reply ready message to server
+                socket.emit("ready", {room,playpos});
+            })
+            //update hand on receive
+            socket.on("hand update", e => {
+                console.log("hand update received")
+                if (e.last == 0) {
+                    //update hand only
+                    player[playpos][1]['hand'] = e.stat;
+                    //update image on screen
+                    updateplayerhand(e.stat);
+                } else { //update lastdrawn
+
+                }
+            })
+            socket.on("drawaction", e => {
+                player[playpos][1] = e.hand;
+                gamedata[1]['lastdrawn'] = e.last;
+                kanlist = e.action;
+                urturn = true;
+                /*let getele = document.getElementById("player-hand").children;
+                document.getElementById("player-hand").children.foreach(function(elements) {
+                    tile.addEventListener("click", function() {
+                    console.log("action emited");
+                    socket.emit('action', elements.classList(1));
+                    });
+                });
+                for (let i=0;i<getele.length;i++) {
+                    getele[i].addEventListener("click", () => {
+                    console.log("action emited");
+                    //socket.emit('action', getele[i].classList(1));
+                    });
+                }*/
+                //take out the last drawn
+                e.hand.hand.splice(e.hand.hand.indexOf(e.last),1);
+                e.hand.hand.push(e.last);
+                //update the hand
+                updateplayerhand(e.hand.hand,player[playpos][0].exposed);
+                //check for buhua
+                if (e.action == 0) {
+                    //do buhua action
+                    socket.emit("buhua", {room});
+                    //perform buhua animation
+                    let hua = document.createElement("div");
+                    hua.id = "word";
+                    hua.textContent = "花"
+
+                    hua.addEventListener('animationend', () => {
+                        setTimeout(() => {
+                            hua.remove()
+                        }, 300);
+                    });
+                    document.getElementById("game-board").appendChild(hua);
+                } else{
+                //check for button
+                //check for kan
+                if (e.action!==0) {
+                    //activate kan button
+                    enablebutton(3);
+                }
+                //check for tenpai
+                if (Object.keys(e.hand.tenpai).length !== 0) {
+                    enablebutton(5);
+                    enablebutton(4);
+                }
+                //check for zumo
+                if (Object.keys(e.hand.winningtile).length !== 0) {
+                    enablebutton(7);
+                }
+                }
+                
+                
+            })
+            socket.on("ask ron", e => {
+
+            })
+            socket.on("ask pong", e => {
+
+            })
+            socket.on("ask kan", e => {
+                
+            })
+        </script>
+    </body>
+</html>

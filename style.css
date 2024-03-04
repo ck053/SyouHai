@@ -1,0 +1,262 @@
+
+.game-board {
+    width: 800px;
+    height: 800px;
+    border: 1px solid black;
+    position: relative;
+  }
+  
+.oppdiscard {
+    width: 180px;
+    height: 150px;
+    border: 1px solid blue;
+    position: absolute;
+    top: 158px;
+    left: 310px;
+}
+  
+.leftdiscard {
+    width: 150px;
+    height: 180px;
+    border: 1px solid red;
+    position: absolute;
+    top: 308px;
+    left: 160px;
+}
+  
+.rightdiscard {
+    width: 150px;
+    height: 180px;
+    border: 1px solid green;
+    position: absolute;
+    top: 308px;
+    left: 490px;
+}
+
+.owndiscard {
+    width: 180px;
+    height: 150px;
+    border: 1px solid blue;
+    position: absolute;
+    top: 490px;
+    left: 310px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    justify-content: flex-start;
+}
+
+.owndiscard .tile {
+    width: 30px;
+    height: 40px;
+    margin: 0;
+}
+  
+.player-hand {
+    width: 800px;
+    height: 70px;
+    border: 1px solid orange;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    flex-direction: row;
+    z-index: 1;
+}
+.player-exposed {
+  width: 800px;
+  height: 70px;
+  border: 1px solid orange;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  z-index: -1;
+}
+
+.exptile {
+  height: 60px;
+  width: 40px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  position: relative;
+  top: 15px;
+}
+
+.exptile1 {
+  height: 70px;
+  width: 60px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  position: relative;
+  right:2.5px;
+  bottom:10px;
+  transform: rotate(90deg);
+}
+.exptile2 {
+  height: 70px;
+  width: 60px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  position: relative;
+  right:2.5px;
+  bottom: 22px;
+  transform: rotate(90deg);
+}
+
+.doubletile{
+  width: 55px;
+  height: 107px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.centreboard{
+    width: 180px;
+    height: 180px;
+    border: 1px solid purple;
+    position: absolute;
+    bottom: 310px;
+    left: 310px;
+}
+
+.tile {
+    width: 50px;
+    height: 70px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-right: 5px;
+}
+
+.button-area {
+    width: 800px;
+    height: 60px;
+    border: 1px solid purple;
+    position: absolute;
+    bottom: 71px;
+    display: flex;
+    flex-direction: row-reverse;
+    flex-wrap:nowrap;
+}
+
+.action-button{
+    height: 50px;
+    width: 110px;
+    border-radius: 20px;
+    margin-right:20px;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+#button-0{
+  background-color: rgb(65, 222, 25);
+  color:rgb(25, 115, 217);
+}
+
+#button-1{
+  background-color: aqua;
+  color: rgb(230, 5, 5);
+}
+
+#button-2, #button-3{
+  background-color:navajowhite;
+}
+#button-4{
+  background-color: yellow;
+  color: rgb(255, 140, 0);
+}
+
+#button-5{
+  background-color: lightpink;
+  color:rgb(253, 85, 24);
+}
+
+#button-7,#button-6{
+  background-color: red;
+  color:rgb(255, 196, 0);
+}
+
+#button-8{
+  background-color: darkgrey;
+  color: rgb(250, 241, 241);
+}
+  
+  /* Tile image styles */
+  .tile-image {
+    width: 30px;
+    height: 40px;
+    display: inline-block;
+    margin: 0px;
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+#choice {
+  width: 300px;
+  height: 150px;
+  position:absolute;
+  left:250px;
+  top:550px;
+  background-color:white;
+  border-radius:30px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+#closebutton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: white;
+  color: lightgray;
+  border: none;
+  padding: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#kantext{
+  position:absolute;
+  top:1;
+}
+
+#word {
+  font-size: 75px;
+  position: absolute;
+  animation: popout 0.5s forwards;
+  top:75%;
+  left:45%;
+  color:white;
+  text-shadow: 5px 5px 5px rgb(213, 213, 213);
+}
+
+#word2 {
+  font-size: 75px;
+  position: absolute;
+  animation: popout 0.5s forwards;
+  top:45%;
+  left:10%;
+  color:white;
+  text-shadow: 5px 5px 5px rgb(213, 213, 213);
+}
+
+#word3 {
+  font-size: 75px;
+  position: absolute;
+  animation: popout 0.5s forwards;
+  top:45%;
+  left:80%;
+  color:white;
+  text-shadow: 5px 5px 5px rgb(213, 213, 213);
+}
+
+@keyframes popout {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
