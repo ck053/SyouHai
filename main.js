@@ -3,10 +3,29 @@ import * as hucheck from './hucheck.js';
 // 牌山 1x=萬 2x=索 3x=筒 z=1東2南3西4北5白6發7中 h=花
 var wall = [];
 const card = [11,19,31,32,33,34,35,36,37,38,39,51,52,53,54,55,56,57,58,59,65,69,73,77,81,85,89];
+const menfeng = [65,65,65,69,69,69];
 for (let i=0;i<card.length;i++){
     for(let j=0;j<4;j++){
         wall.push(card[i]);
     }
+}
+var player = [];
+for (let i=0;i<3;i++){ // public
+    player[i] = [{
+    position: i,
+    exposed: [],
+    riichi: false,
+    ippasu: false,
+    discard:[],
+    seasontiles:0,
+    name: "玩家"+String(i+1),
+    menzen:true,
+}, { // private
+    hand: [1000],
+    tenpai: {},
+    winningtile: {},
+    furiten: [],
+}]
 }
 var hand;
 var activeuser;
@@ -188,45 +207,75 @@ function dealCard() {
     }
 }
 function start(data){
-  //get the wall
-  let newwall = [...wall];
+  for (let i=0;i<3;i++){ // public
+    data[i] = [{
+    position: 0,
+    exposed: [],
+    riichi: false,
+    ippasu: false,
+    discard:[],
+    seasontiles:0,
+    name: "玩家"+String(i+1),
+    menzen:true,
+  }, { // private
+    hand: [1000],
+    tenpai: {},
+    winningtile: {},
+    furiten: [],
+  }]
+  }
+  for (let i=0;i<3;i++) {
+    if (data[3][0]['currentplayer'] == (i+1)%3) {
+      data[i][0]['position'] = 1;
+    }
+    else if (data[3][0]['currentplayer'] == (i+2)%3) {
+      data[i][0]['position'] = 2;
+    }
+  }
+  //clear the wall and hands
+  //reset the wall
+  data[3][1]['wall'] = [];
+  for (let i=0;i<card.length;i++){
+    for(let j=0;j<4;j++){
+      data[3][1]['wall'].push(card[i]);
+    }
+  }
   //shuffle the wall
-  newwall = shuffle(shuffle(wall));
+  data[3][1]['wall'] = shuffle(shuffle(data[3][1]['wall']));
   //save newwall for record
-  let savewall = [...newwall];
+  data[7].push([[...data[3][1]['wall']],[]]);
+  console.log(data[7]);
   //deal hand to player
   for (let i=0; i<12; i++) {
-    data[0][1]['hand'].push(newwall.pop());
-    data[1][1]['hand'].push(newwall.pop());
-    data[2][1]['hand'].push(newwall.pop());
+    data[0][1]['hand'].push(data[3][1]['wall'].pop());
+    data[1][1]['hand'].push(data[3][1]['wall'].pop());
+    data[2][1]['hand'].push(data[3][1]['wall'].pop());
   }
   data[0][1]['hand'].sort((a,b) => a-b);
   data[1][1]['hand'].sort((a,b) => a-b);
   data[2][1]['hand'].sort((a,b) => a-b);
-  data[3][1]['wall'] = newwall;
   //take card for dora
-  data[3][0]['dora'].push(wall.pop());
-  data[3][1]['ura'].push(wall.pop());
+  data[3][0]['dora'].push(data[3][1]['wall'].pop());
+  data[3][1]['ura'].push(data[3][1]['wall'].pop());
   //check tenpai
-  data[1][1]['hand'] = [34,34,34,35,35,35,36,36,36,37,38,77,1000];
-  data[2][1]['hand'] = [52,52,52,53,53,53,54,55,56,57,58,85,1000];
+
+  //data[0][1]['hand'] = [31,34,11,19,35,35,36,36,36,36,52,77,1000];
+  //data[1][1]['hand'] = [52,52,52,53,53,53,54,55,56,57,58,85,1000];
+  //data[2][1]['hand'] = [11,11,11,19,19,19,31,31,31,32,33,34,1000];
+  
   data[1][1]['hand'].push(11);
   let tenpailist1 = hucheck.tenpaiSQ(data[1][1]['hand']);
   if (typeof tenpailist1['11'] !== 'undefined') {
-    data[1][1]['tenpai'] = tenpailist1['11'];
+    data[1][1]['winningtile'] = tenpailist1['11'];
   }
   data[1][1]['hand'].splice(0,1);
-  console.log("hand is: ", data[1][1]['hand']);
-  console.log("tenpai is: ", data[1][1]['tenpai']);
   data[2][1]['hand'].push(11);
   let tenpailist2 = hucheck.tenpaiSQ(data[2][1]['hand']);
   if (typeof tenpailist2['11'] !== 'undefined') {
     data[2][1]['winningtile'] = tenpailist2['11'];
   }
   data[2][1]['hand'].splice(0,1);
-  console.log("hand is: ", data[2][1]['hand']);
-  console.log("tenpai is: ", data[2][1]['tenpai']);
-  return savewall;
+  return;
 }
 function deal(data) { //deal card to current player, first check if need to buhua, then check for action and return;
   //pull a tile from wall to hand
@@ -260,7 +309,19 @@ function deal(data) { //deal card to current player, first check if need to buhu
   if (ktile = fourofakind(copyhand)) {
     //get kan list
     kanlist = getkan(hand, exposed)
-    //TODO:special check for riichi
+    //special check for riichi
+    if (activeuser[0]['riichi'] == 1) {
+      if (kanlist[0].includes(data[3][1][2])){
+        let newhand = [...hand];
+        newhand.splice(data[player][1]["hand"].indexOf(data[3][1][2]),4);
+        let newwiningtile = hucheck.checktenpai(newhand);
+        if (newwiningtile == activeuser[1]['winningtile']) {
+          kanlist = [[data[3][1][2]],[]];
+        } else {
+          kanlist = [[],[]];
+        }
+      }
+    }
   }
   //check for tenpai
   activeuser[1]['winningtile'] = hucheck.checktenpai(hand);
@@ -280,9 +341,118 @@ function ankan(data,player,tile) {
   data[3][0]["dora"].push(data[3][1]["wall"].pop());
   data[3][1]["ura"].push(data[3][1]["wall"].pop());
 }
-function addkan() {
-
+//TODO:
+function addkan(data,player,tile) {
+  //sort the hand
+  data[player][1]["hand"].sort((a,b) => a-b);
+  //remove the card from the player's hand
+  data[player][1]["hand"].splice(data[player][1]["hand"].indexOf(tile),1);
+  //add the kan tile to the exposed
+  let position = 0;
+  for (let i = 0; i < 4; i++) {
+    if (data[player][0]["exposed"][i][0][0] == tile) {
+      position = i;
+    }
+  }
+  originplayer = data[player][0]["exposed"][position][1][0];
+  data[player][0]["exposed"][position] = [[tile,tile,tile,tile],[originplayer,1]];
+  //get the new dora and ura
+  data[3][0]["dora"].push(data[3][1]["wall"].pop());
+  data[3][1]["ura"].push(data[3][1]["wall"].pop());
 }
+function areArraysEqual(arr1, arr2) {
+  arr1.sort((a,b) => a-b);
+  arr2.sort((a,b) => a-b);
+  let areEqual = true;
+  if (arr1.length !== arr2.length) {
+    areEqual = false;
+  } else {
+    for (let i = 0; i < arr1.length; i++) {
+      if (arr1[i] !== arr2[i]) {
+        areEqual = false;
+        break;
+      }
+    }
+  }
+  return areEqual;
+}
+function anyArraysEqual(arrList) {
+  for (let i = 0; i < arrList.length; i++) {
+    for (let j = i + 1; j < arrList.length; j++) {
+      if (areArraysEqual(arrList[i], arrList[j])) {
+        return {i,j};
+      }
+    }
+  }
+  return false;
+}
+//TODO:
+function getfan(winhand, data, player, wintile) {
+  let fanlist = new Array(48).fill(0);
+  //check menzen
+  if (data[player][0]['menzen']) {
+    //check zumo
+    if (data[3]['currentplayer'] == player) {
+      fanlist[2]++;
+      fanlist[47]++;
+    }
+    //check riichi
+    if (data[player][0]['riichi']) {
+      fanlist[0]++;
+      fanlist[47]++;
+      if (data[player][0]['ippasu']) {
+        fanlist[1]++;
+        fanlist[47]++;
+      }
+    }
+    //check pinghu
+    let pinghu = false;
+    if (winhand[0].flat().flat().length == 14){
+      if (winhand[0][2].length == 0) {
+        if (winhand[0][0][0] !== menfeng[data[3]['rounds']]) {
+          if (winhand[0][0][0] !== 65+data[player][0]['position']*4) {
+            for (let i=0; i < winhand[0][1].length; i++) {
+              if (winhand[0][1][i][0] == wintile && winhand[0][1][i][2] == wintile) {
+                pinghu = true; 
+              }
+            }
+          }
+        }
+      }
+    }
+    if (pinghu) {
+      fanlist[3]++;
+      fanlist[47]++;
+    }
+    //一杯口 二杯口
+    var stat;
+    if (stat = anyArraysEqual(winhand[0][1])) {
+      let newwinhand = [...winhand];
+      newwinhand[1].splice(stat.j,1);
+      newwinhand[1].splice(stat.i,1);
+      if (anyArraysEqual(newwinhand)) {
+        fanlist[8]++;
+        fanlist[47]++;
+      } else {
+        fanlist[4]++;
+        fanlist[47]++;
+      }
+    }
+  }
+  return fanlist;
+}
+function getpt(winhand, exposed = [], data, player, tile) {
+  //sperate the hand into parts
+  let hulist = hucheck.allcomb(winhand, exposed);
+  let highfan = 0;
+  for (let i=0; i<hulist.length; i++) {
+    let fan = getfan(hulist[i], data, player, tile);
+    hulist[i].push(fan);
+    if (fan>highfan) {highfan = fan;}
+  }
+  return hulist;
+}
+
 export {start, deal,fourofakind,getkan,ankan,addkan};
 //main game loop for holding the game
 /*var ON = true;

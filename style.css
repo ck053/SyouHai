@@ -17,24 +17,34 @@
   
 .leftdiscard {
     width: 150px;
-    height: 180px;
+    height: 190px;
     border: 1px solid red;
     position: absolute;
     top: 308px;
     left: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-content: flex-start;
+    flex-wrap: wrap-reverse;
 }
   
 .rightdiscard {
     width: 150px;
-    height: 180px;
+    height: 190px;
     border: 1px solid green;
     position: absolute;
-    top: 308px;
+    top: 299px;
     left: 490px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    justify-content: flex-start;
+    flex-direction:column-reverse;
 }
 
 .owndiscard {
-    width: 180px;
+    width: 190px;
     height: 150px;
     border: 1px solid blue;
     position: absolute;
@@ -51,7 +61,37 @@
     height: 40px;
     margin: 0;
 }
-  
+
+.leftdiscard .tile {
+  width: 40px;
+  height: 30px;
+  margin: 0;
+}
+
+.rightdiscard .tile {
+  width: 40px;
+  height: 30px;
+  margin: 0;
+}
+
+.owndiscard .turnedtile {
+  width: 40px;
+  height: 30px;
+  margin: 0;
+}
+
+.leftdiscard .turnedtile {
+  width: 30px;
+  height: 40px;
+  margin: 0;
+}
+
+.rightdiscard .turnedtile {
+  width: 30px;
+  height: 40px;
+  margin: 0;
+}
+
 .player-hand {
     width: 800px;
     height: 70px;
@@ -62,6 +102,32 @@
     display: flex;
     flex-direction: row;
     z-index: 1;
+}
+.left-player-hand {
+  width: 70px;
+  height: 667px;
+  border: 1px solid orange;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  flex-direction: row;
+  z-index: 1;
+}
+.right-player-hand {
+  width: 70px;
+  height: 667px;
+  border: 1px solid orange;
+  position: absolute;
+  top: 0;
+  left: 730;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-end;
+  flex-direction: row-reverse;
+  z-index: 1;
 }
 .player-exposed {
   width: 800px;
@@ -75,6 +141,32 @@
   justify-content: flex-end;
   z-index: -1;
 }
+.left-player-exposed {
+  width: 70px;
+  height: 667px;
+  border: 1px solid orange;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-end;
+  flex-direction: row;
+  z-index: -1;
+}
+.right-player-exposed {
+  width: 70px;
+  height: 667px;
+  border: 1px solid orange;
+  position: absolute;
+  top: 0;
+  left: 730;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  flex-direction: row-reverse;
+  z-index: -1;
+}
 
 .exptile {
   height: 60px;
@@ -84,7 +176,13 @@
   position: relative;
   top: 15px;
 }
-
+.Turnedexptile {
+  height: 40px;
+  width: 50px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  position: relative;
+}
 .exptile1 {
   height: 70px;
   width: 60px;
@@ -113,6 +211,64 @@
   flex-direction: column;
   justify-content: flex-end;
 }
+
+.leftexptile1 {
+  height: 60px;
+  width: 70px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  position: relative;
+  bottom:2.5px;
+  left:-17px;
+  transform: rotate(90deg);
+}
+.leftexptile2 {
+  height: 60px;
+  width: 70px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  position: relative;
+  bottom:2.5px;
+  left:-30px;
+  transform: rotate(90deg);
+}
+
+.leftdoubletile{
+  width: 107px;
+  height: 55px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+.rightexptile1 {
+  height: 60px;
+  width: 70px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  position: relative;
+  bottom:2.5px;
+  right:-13px;
+  transform: rotate(90deg);
+}
+.rightexptile2 {
+  height: 60px;
+  width: 70px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  position: relative;
+  bottom:2.5px;
+  transform: rotate(90deg);
+}
+
+.rightdoubletile{
+  width: 107px;
+  height: 55px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
 .centreboard{
     width: 180px;
     height: 180px;
@@ -120,6 +276,62 @@
     position: absolute;
     bottom: 310px;
     left: 310px;
+}
+
+#point-left {
+  width:180px;
+  height:10px;
+  position:absolute;
+  bottom: 85;
+  left:-79;
+  transform: rotate(90deg);
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+#point-right {
+  width:180px;
+  height:10px;
+  position:absolute;
+  top: 85;
+  left:77;
+  transform: rotate(270deg);
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+#point-self {
+  width:180px;
+  height:10px;
+  bottom:6;
+  position:absolute;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+#doraind {
+  width:120px;
+  height:32px;
+  position:absolute;
+  display:flex;
+  flex-direction:row;
+  top:70;
+  left:30;
+}
+
+#roundinfo {
+  width:180px;
+  height:20px;
+  z-index: 2;
+}
+
+.dora {
+  height: 32px;
+  width: 24px;
+  background-size: contain;
 }
 
 .tile {
@@ -130,6 +342,29 @@
     margin-right: 5px;
 }
 
+.turnedtile {
+  width: 70px;
+  height: 50px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin-right: 5px;
+}
+
+.lefttile {
+  width: 70px;
+  height: 50px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin-right: 5px;
+}
+
+.righttile {
+  width: 70px;
+  height: 50px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin-left: 5px;
+}
 .button-area {
     width: 800px;
     height: 60px;
@@ -218,6 +453,11 @@
 }
 
 #kantext{
+  position:absolute;
+  top:1;
+}
+
+#pongtext{
   position:absolute;
   top:1;
 }

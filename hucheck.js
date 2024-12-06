@@ -535,12 +535,12 @@ function checkcomb(winninghand, removed = []) {
     let temphand1 = [...winninghand];
     for (let i=0; i<triplist.length; i++){
         let removeinstance = [];
-        removeinstance.push(triplist[i]);
-        removeinstance.push(triplist[i]);
-        removeinstance.push(triplist[i]);
+        removeinstance.push(triplist[i][0]);
+        removeinstance.push(triplist[i][0]);
+        removeinstance.push(triplist[i][0]);
         removetrips(temphand1,[triplist[i]]);
-        removed.push(removeinstance)
         if(checkcomb(temphand1, removed)){
+            removed[2].push(removeinstance)
             return removed;
         }
     }
@@ -552,33 +552,78 @@ function checkcomb(winninghand, removed = []) {
         return false;
     }
     //take away a straight
-    removed.push(straightlist[0])
     let temphand2 = [...winninghand];
     let copylist = [...straightlist];
     temphand2 = removestraight(temphand2,copylist[0]);
     if(checkcomb(temphand2, removed)){
+        removed[1].push(straightlist[0])
         return removed;
     }
     return false;
 
 }
 //get all possible winning combination for a hand
-function allcomb(allcombhand) {
+function allcomb(allcombhand, exposed = [], card = 0) {
+    allcombhand.sort((a,b) => a-b);
     //check if the hand is valid
     if (allcombhand.length%3 != 2){
         console.log("invalid hand to allcomb")
         return false;
     }
+    //check if contains wildcard
+    if (allcombhand.includes(1000)) {
+        let list = checktenpai(allcombhand)[1000];
+        let templist = [];
+        if (typeof list !== 'undefined') {
+            if (typeof list === 'number') {
+                allcombhand.pop();
+                allcombhand.push(list);
+                allcombhand.sort((a,b) => a-b);
+                templist = templist.concat(allcomb(allcombhand, exposed, list));
+                allcombhand.splice(allcombhand.indexOf(list),1);
+                allcombhand.push(1000);
+            } else {
+                for (let i=0; i < list.length; i++) {
+                    allcombhand.pop();
+                    allcombhand.push(list[i]);
+                    allcombhand.sort((a,b) => a-b);
+                    templist = templist.concat(allcomb(allcombhand, exposed, list[i]));
+                    allcombhand.splice(allcombhand.indexOf(list[i]),1);
+                    allcombhand.push(1000);
+                }
+            }
+        }
+        return templist;
+    }
     //define an array for store info
     let allcomblist = [];
     //get the list of all pairs
     let combpairlist = checkpairs(allcombhand);
-    for (i=0; i<combpairlist.length; i++){
+    for (let i=0; i<combpairlist.length; i++){
         allcombhand.splice(allcombhand.indexOf(combpairlist[i]),2); //delete a pair
         // check if is winning
-        let comb = [];
-        if(comb = checkcomb(allcombhand)){
-            allcomblist.push(comb);
+        let comb = [[[combpairlist[i],combpairlist[i]],[],[]], exposed, card];
+        if(comb[0] = checkcomb(allcombhand,comb[0])){
+            let comb1 = JSON.parse(JSON.stringify(comb));
+            allcomblist.push(comb1);
+            if (comb[0][2].length >=3) {
+                if (comb[0][2][0][0] == comb[0][2][2][0]+2) {
+                    comb[0][1].push([comb[0][2][0][0],comb[0][2][0][0]-1,comb[0][2][0][0]-2]);
+                    comb[0][1].push([comb[0][2][0][0],comb[0][2][0][0]-1,comb[0][2][0][0]-2]);
+                    comb[0][1].push([comb[0][2][0][0],comb[0][2][0][0]-1,comb[0][2][0][0]-2]);
+                    comb[0][2].splice(0,3);
+                    allcomblist.push(comb);
+                }
+            }
+            if (comb[0][2].length >=4) {
+                if (comb[0][2][1][0] == comb[0][2][3][0]+2) {
+                    comb[0][1].push([comb[0][2][1][0],comb[0][2][1][0]-1,comb[0][2][1][0]-2]);
+                    comb[0][1].push([comb[0][2][1][0],comb[0][2][1][0]-1,comb[0][2][1][0]-2]);
+                    comb[0][1].push([comb[0][2][1][0],comb[0][2][1][0]-1,comb[0][2][1][0]-2]);
+                    comb[0][2].splice(1,3);
+                    allcomblist.push(comb);
+                }
+            }
         } 
         allcombhand.push(combpairlist[i]);
         allcombhand.push(combpairlist[i]); //add back the pair
@@ -686,6 +731,7 @@ function tenpaiSQ(SQhand, exposed = []) {
 
     return tenpaiSQObj;
 }
+console.log(allcomb([11,11,11,12,12,12,15,15,15,18,18,18,35,1000]))
 export { checkpinghu, checkhu, checkWin, checktenpai, checkcomb, allcomb, tenpaiSQ};
 //hand = [31, 31, 32, 32, 32, 33, 34, 35, 36, 37, 38, 39, 39, 39];
 //hand = [11,31,31,31,32,32,33,33,34,34,35,35,57,1000];
